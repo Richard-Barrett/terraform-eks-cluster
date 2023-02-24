@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+autonumber
+
+actor Developer as dev
+participant GitHub as gh
+participant "Terraform Cloud" as tfc
+participant AWS as aws
+
+dev -> gh: Update Infrastructure Spec
+dev -> gh: Pull Request
+
+group GitHub Action
+gh -> aws: <font color=red>Authenticate w/ AWS</font>
+
+note right of gh: The GitHub Action needs credentials to obtain a token\nthat can be used by "Terraform Cloud" to update the AWS Infrastructure
+
+aws -> gh: Return Token for Terraform Cloud to use
+gh -> tfc: Trigger Infrastructure State Reconcile
+tfc -> aws: Authenticate using Token
+tfc -> aws: Request State
+aws -> tfc: Return State
+tfc -> tfc: Reconcile Current State w/ Spec
+tfc -> aws: Apply Changes
+tfc -> gh: Update Outcome
+end
+
+@enduml
